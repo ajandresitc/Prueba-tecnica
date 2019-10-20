@@ -1,23 +1,30 @@
-import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
-import { NgModule } from "@angular/core";
-import { FormsModule } from "@angular/forms";
-import { HttpClientModule } from "@angular/common/http";
-import { RouterModule } from "@angular/router";
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { NgModule } from '@angular/core';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { RouterModule } from '@angular/router';
 import { ToastrModule } from 'ngx-toastr';
 
-import { AppComponent } from "./app.component";
-import { AdminLayoutComponent } from "./layouts/admin-layout/admin-layout.component";
+import { AppComponent } from './app.component';
+import { AdminLayoutComponent } from './layouts/admin-layout/admin-layout.component';
 import { AuthLayoutComponent } from './layouts/auth-layout/auth-layout.component';
 
-import { NgbModule } from "@ng-bootstrap/ng-bootstrap";
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 
-import { AppRoutingModule } from "./app-routing.module";
-import { ComponentsModule } from "./components/components.module";
+import { AppRoutingModule } from './app-routing.module';
+import { ComponentsModule } from './components/components.module';
+import { LoginComponent } from './pages/login/login.component';
+import { AuthInterceptorService } from './service/interceptors/auth-interceptor.service';
+import { HTTPListener, LogInterceptorService, HTTPStatus } from './service/interceptors/log-interceptor.service';
 
+const rxjsServices = [HTTPListener, HTTPStatus];
 @NgModule({
   imports: [
     BrowserAnimationsModule,
     FormsModule,
+    ReactiveFormsModule,
+    ScrollingModule,
     HttpClientModule,
     ComponentsModule,
     NgbModule,
@@ -25,8 +32,13 @@ import { ComponentsModule } from "./components/components.module";
     AppRoutingModule,
     ToastrModule.forRoot()
   ],
-  declarations: [AppComponent, AdminLayoutComponent, AuthLayoutComponent],
-  providers: [],
+  declarations: [AppComponent, AdminLayoutComponent, AuthLayoutComponent, LoginComponent],
+  providers: [
+    rxjsServices,
+    { provide: HTTP_INTERCEPTORS, useClass: LogInterceptorService, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: HTTPListener, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptorService, multi: true }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule {}
